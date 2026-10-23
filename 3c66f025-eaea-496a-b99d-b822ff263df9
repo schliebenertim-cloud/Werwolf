@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Werwölfe von Düsterwald</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0b0d1a;--card:rgba(24,22,44,.82);--line:#4a3f6b;--gold:#e8c46a;--txt:#ece7f5;--mute:#a79fc2;--red:#c4384a;--grn:#5fb88a;--blue:#7aa2ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--txt);font-family:Cinzel,Georgia,serif;
+background-image:radial-gradient(1.5px 1.5px at 20% 15%,#fff8,transparent),radial-gradient(1px 1px at 70% 25%,#fff7,transparent),radial-gradient(1.5px 1.5px at 40% 60%,#fff6,transparent),radial-gradient(1px 1px at 85% 70%,#fff7,transparent),radial-gradient(1px 1px at 10% 85%,#fff6,transparent),radial-gradient(ellipse at 50% 0%,#2b2160 0%,transparent 60%),linear-gradient(#0b0d1a,#150f26 70%,#0a0812);
+background-attachment:fixed}
+body.day{background-image:radial-gradient(ellipse at 50% 0%,#a2631f 0%,transparent 65%),linear-gradient(#2a2036,#3a2a2e 70%,#1a1220)}
+#wrap{max-width:560px;margin:0 auto;padding:18px 16px 60px;position:relative}
+.forest{position:fixed;left:0;right:0;bottom:0;height:90px;pointer-events:none;opacity:.55;z-index:0}
+#app{position:relative;z-index:1}
+h1{font-family:'Cinzel Decorative',Georgia,serif;text-align:center;font-size:clamp(26px,7vw,38px);margin:8px 0 2px;color:var(--gold);text-shadow:0 0 24px #e8c46a66}
+.sub{text-align:center;color:var(--mute);margin:0 0 20px;font-size:14px}
+.moon{display:block;margin:6px auto;filter:drop-shadow(0 0 18px #e8c46a88);animation:fl 5s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-5px)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;backdrop-filter:blur(6px);box-shadow:0 8px 30px #0007}
+.card h2{margin:0 0 8px;font-size:20px;color:var(--gold)}
+.big{font-size:52px;text-align:center;margin:4px 0}
+p{line-height:1.5;margin:6px 0}
+.mute{color:var(--mute);font-size:14px}
+input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:#0e0c1d;color:var(--txt);font:inherit;font-size:17px;margin:6px 0}
+input.code{text-transform:uppercase;letter-spacing:.35em;text-align:center;font-size:24px}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:12px;padding:13px 16px;font-size:16px;color:#1a1230;background:linear-gradient(#f1d385,#d3a843);box-shadow:0 3px 0 #8a6a1e,0 6px 16px #0006;width:100%;margin:6px 0;transition:transform .1s}
+button:active{transform:translateY(2px)}
+button.sec{background:#2a2447;color:var(--txt);box-shadow:0 3px 0 #15112b;border:1px solid var(--line)}
+button.red{background:linear-gradient(#e0586a,#b02a3c);color:#fff;box-shadow:0 3px 0 #6e1623}
+button:disabled{opacity:.45;cursor:default}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{margin:0;padding:12px 8px;font-size:15px}
+.grid button.sel{outline:3px solid var(--gold);background:linear-gradient(#e0586a,#b02a3c);color:#fff}
+.pl{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:#0e0c1d99;margin:5px 0}
+.pl.dead{opacity:.5;text-decoration:line-through}
+.badge{margin-left:auto;font-size:12px;color:var(--mute)}
+.codebox{font-size:40px;letter-spacing:.3em;text-align:center;color:var(--gold);padding:8px;border:2px dashed var(--line);border-radius:14px;margin:8px 0}
+.role{border-radius:16px;padding:16px;text-align:center;border:2px solid var(--gold);background:linear-gradient(#2c2250,#1a1431)}
+.role.wolf{border-color:var(--red)}
+.msg{border-left:4px solid var(--gold);padding:8px 12px;background:#0e0c1d99;border-radius:8px;margin:10px 0}
+.err{color:#ff8fa0;text-align:center;min-height:20px}
+.fog{animation:fl 6s infinite}
+.bar{position:sticky;top:0;z-index:5;background:#0b0d1af2;padding:8px;margin:0 -8px 10px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;border-radius:0 0 12px 12px}
+.chip{width:auto;margin:0;padding:6px 10px;font-size:13px;background:#2a2447;color:var(--txt);box-shadow:none;border:1px solid var(--line)}
+.chip.me{outline:2px solid var(--gold)}
+.chip.todo{background:linear-gradient(#e0586a,#b02a3c);color:#fff}
+.chip.dead{opacity:.4;text-decoration:line-through}
+.forest{display:none}
+.scene{position:fixed;left:0;right:0;bottom:0;height:58vh;z-index:0;pointer-events:none;transition:opacity 1s}
+body.day .scene{opacity:.55}
+.scene svg{width:100%;height:100%;display:block}
+.bigmoon{position:fixed;top:7vh;right:10vw;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffbe6,#f1d385 60%,#c9a24a);box-shadow:0 0 60px 20px #e8c46a55;animation:fl 7s ease-in-out infinite;opacity:.9}
+body.day .bigmoon{background:radial-gradient(circle at 35% 35%,#fff6c8,#ffb347);box-shadow:0 0 90px 40px #ffa94d66}
+.bat{position:fixed;left:-8vw;font-size:22px;filter:brightness(0);animation:fly 16s linear infinite}
+@keyframes fly{0%{transform:translate(0,0)}25%{transform:translate(28vw,-4vh)}50%{transform:translate(56vw,3vh)}75%{transform:translate(84vw,-5vh)}100%{transform:translate(115vw,2vh)}}
+.win{fill:#f1d385;animation:fl2 3.2s ease-in-out infinite}
+@keyframes fl2{50%{opacity:.35}}
+.mist{position:fixed;left:-20%;width:140%;height:130px;bottom:6vh;background:radial-gradient(ellipse at center,#a9a5d444,transparent 70%);animation:drift 20s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translateX(12%)}}
+.fx{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:radial-gradient(circle,#5a0b1acc,#000000ee);animation:fxin .5s,fxout .6s var(--d,3.6s) forwards;cursor:pointer}
+.dth{text-align:center;animation:rise .9s both}
+.sk{font-size:88px;animation:shake .7s .3s,pulse 1.5s 1.1s infinite}
+.dn{font-size:32px;color:#ff9aa8;font-family:'Cinzel Decorative',Georgia,serif}
+.dr{font-size:19px;color:var(--gold)}
+.dw{color:#ffb3c0;font-size:14px}
+@keyframes fxin{from{opacity:0}}
+@keyframes fxout{to{opacity:0;visibility:hidden}}
+@keyframes rise{from{opacity:0;transform:translateY(50px) scale(.7)}}
+@keyframes shake{20%{transform:rotate(-14deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-7deg)}80%{transform:rotate(4deg)}}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.heart{border-color:#ff7aa8;animation:pulse 1.8s infinite}
+.vil{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px 10px}
+.hs{width:auto;margin:0;padding:0;background:none;box-shadow:none;border:0;color:var(--txt);text-align:center;font-weight:500;transition:transform .15s}
+.hs:hover{transform:translateY(-3px)}
+.roof{height:28px;background:linear-gradient(#a03a4a,#6e2234);clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 -5px}
+.hb{background:linear-gradient(#4a3a6e,#2f2548);border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;padding:6px 3px 8px;min-height:92px}
+.av{font-size:30px;line-height:1.15}
+.nm{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg{font-size:13px;min-height:18px}
+.rl{font-size:11px;color:var(--gold)}
+.hs.dead{filter:grayscale(1);opacity:.6}
+.hs.me .hb{box-shadow:inset 0 0 0 2px var(--gold)}
+.hs.sel .hb{outline:2px solid var(--blue)}
+.hs.ok .roof{background:linear-gradient(#f1d385,#c9a02f);animation:pulse 1.3s infinite}
+.hs.ok .hb{border-color:var(--gold)}
+.hs.pick .hb{box-shadow:inset 0 0 0 3px #e0586a}
+.vil{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:14px 10px}
+.av{font-size:36px}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);margin:0;border-radius:18px 18px 0 0;max-height:62vh;overflow:auto;z-index:20;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));animation:up .25s}
+@keyframes up{from{transform:translate(-50%,40px);opacity:0}}
+html:has(body.ingame){overflow:hidden}
+body.ingame{overflow:hidden}
+body.ingame #wrap{max-width:1000px;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:0 8px;display:flex;flex-direction:column}
+body.ingame #app{flex:1;min-height:0;display:flex;flex-direction:column}
+body.ingame .bar{position:static;flex:0 0 auto;margin:0 0 4px;padding:6px}
+.game{flex:1;min-height:0;display:flex;flex-direction:column}
+.gh{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:8px 2px}
+.gh b{font-family:'Cinzel Decorative',Georgia,serif;color:var(--gold);font-size:18px}
+.gh .mute{font-size:12px;flex:1}
+.gh .chip{background:linear-gradient(#f1d385,#d3a843);color:#1a1230}
+.hud{flex:0 0 auto;height:clamp(150px,27dvh,260px);overflow:auto}
+.hud .card{padding:10px 12px;margin:6px 0}
+.hud .card h2{font-size:16px;margin:0 0 4px}
+.hud .big{font-size:26px;margin:0}
+.hud p{margin:3px 0;font-size:13px}
+.hud button{padding:9px 12px;margin:4px 0;font-size:14px}
+.hud .msg{margin:6px 0;padding:6px 10px;font-size:13px}
+.field{flex:1;min-height:0;position:relative;container-type:size}
+.field .hs{position:absolute;transform:translate(-50%,-50%);--w:calc(min(100cqw/var(--c)*.86,100cqh/var(--r)*.6));width:var(--w);font-size:calc(var(--w)/6.2)}
+.field .hs:hover{transform:translate(-50%,calc(-50% - 3px))}
+.field .roof{height:2.6em}
+.field .hb{min-height:0;padding:.5em .2em .6em;border-radius:0 0 .8em .8em}
+.field .av{font-size:3em;line-height:1.1}
+.field .nm{font-size:1.05em}
+.field .tg{font-size:1em;min-height:1.3em}
+.field .rl{font-size:.85em}
+.tmr{position:relative;height:22px;border-radius:11px;background:#0e0c1d;border:1px solid var(--line);overflow:hidden;margin:6px 0}
+.tmr i{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#c4384a,#e8c46a);transition:width .3s linear}
+.tmr b{position:relative;display:block;text-align:center;font-size:13px;line-height:22px}
+.arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.field .hs{z-index:1}
+.vt{position:absolute;top:-1.5em;left:50%;transform:translateX(-50%);white-space:nowrap;background:#e0586a;color:#fff;border-radius:1em;padding:.15em .7em;font-size:1.05em;font-weight:700;z-index:3;box-shadow:0 2px 8px #0008}
+.vn{font-size:.72em;color:var(--mute);line-height:1.15;max-height:2.4em;overflow:hidden;margin-top:.2em}
+.vicl{display:inline-block;padding:.25em .7em;border-radius:8px;background:#5a0b1a;border:1px solid #e0586a;animation:pulse 1.4s infinite}
+.hs.vic .hb{box-shadow:inset 0 0 0 3px #e0586a,0 0 20px #e0586a;animation:vicp 1s infinite alternate}
+@keyframes vicp{to{box-shadow:inset 0 0 0 3px #ff8fa0,0 0 34px #ff3b50}}
+.pl.win{border:2px solid var(--gold);background:linear-gradient(#4a3a12cc,#1f1708cc);box-shadow:0 0 14px #e8c46a88;animation:glow 2s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 28px #e8c46aee}}
+.fx.c-vote{background:radial-gradient(circle,#7a3a0acc,#100500ee)}
+.fx.c-poison{background:radial-gradient(circle,#0f6a30cc,#001008ee)}
+.fx.c-hunter{background:radial-gradient(circle,#1f3a7acc,#04081aee)}
+.fx.c-love{background:radial-gradient(circle,#7a1f5acc,#12040eee)}
+.claws{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.claws path{fill:none;stroke:#ff3b50;stroke-width:6;stroke-linecap:round;stroke-dasharray:140;stroke-dashoffset:140;animation:slash .5s .2s forwards;filter:drop-shadow(0 0 6px #f00)}
+.claws path:nth-child(2){animation-delay:.35s}
+.claws path:nth-child(3){animation-delay:.5s}
+@keyframes slash{to{stroke-dashoffset:0}}
+.ember,.bub{position:absolute;bottom:-6vh;font-size:28px;animation:upf 3s linear infinite;pointer-events:none}
+.bub{filter:hue-rotate(80deg)}
+@keyframes upf{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+.arw{position:absolute;top:38%;left:-20%;font-size:72px;animation:arw .9s .1s forwards}
+@keyframes arw{to{left:62%}}
+.dth.c-wolf .sk{animation:lunge .6s both,pulse 1.5s 1s infinite}
+@keyframes lunge{from{transform:scale(.2) translateX(-60vw)}60%{transform:scale(1.5)}to{transform:scale(1)}}
+.dth.c-vote .sk{animation:flick .25s infinite alternate}
+@keyframes flick{to{transform:scale(1.08) rotate(3deg);filter:brightness(1.4)}}
+.dth.c-poison .sk{animation:wob 1.4s ease-in-out infinite}
+@keyframes wob{50%{transform:translateY(-10px) rotate(8deg)}}
+.dth.c-love .sk{animation:brk 1s both,pulse 1.5s 1s infinite}
+@keyframes brk{30%{transform:scale(1.5)}50%{transform:scale(1.5) rotate(-8deg)}}
+.dth.c-hunter .sk{animation:shake .7s 1s}
+.hh{position:relative;width:100%;aspect-ratio:1/1}
+.hh svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 .25em .35em #000a)}
+.hh .winl{fill:url(#gw);stroke:#2b1d33;stroke-width:3}
+.hs:not(.dead) .hh .winl{animation:fl2 4s ease-in-out infinite}
+.hs.dead .hh .winl{fill:#1b1626;animation:none}
+.hh .sm circle{fill:#d8d4ea;opacity:0;animation:smoke 3s linear infinite;transform-box:fill-box}
+.hh .sm circle:nth-child(2){animation-delay:1.5s}
+.hs.dead .hh .sm{display:none}
+@keyframes smoke{0%{opacity:.75;transform:translate(0,4px) scale(.6)}100%{opacity:0;transform:translate(7px,-16px) scale(1.7)}}
+.field .hh .av{position:absolute;left:59%;top:67%;transform:translate(-50%,-50%);font-size:2.3em;line-height:1}
+.tgs{position:absolute;left:-.3em;top:.3em;display:flex;flex-direction:column;gap:.15em;z-index:2}
+.tgs span{font-size:1.2em;line-height:1;filter:drop-shadow(0 0 3px #000)}
+.sign{position:relative;margin:-.5em .1em 0;background:linear-gradient(#7d5937,#4a3020);border:1px solid #20120a;border-radius:.45em;padding:.2em .3em;box-shadow:0 .2em .5em #000a;height:3.1em;overflow:hidden;text-align:center}
+.field .sign .nm{font-size:1.05em;color:#f7ecd2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.field .sign .rl{font-size:.8em;color:#f1d385;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.field .vn{position:absolute;left:50%;top:100%;transform:translateX(-50%);width:max-content;max-width:150%;background:#0e0c1de6;border:1px solid var(--line);border-radius:.5em;padding:.15em .5em;font-size:.8em;color:var(--txt);z-index:5;max-height:none;margin:0}
+.hs.ok .hh{animation:okg 1.2s ease-in-out infinite alternate}
+@keyframes okg{from{filter:drop-shadow(0 0 .15em #e8c46a)}to{filter:drop-shadow(0 0 .9em #f1d385)}}
+.hs.pick .hh{filter:drop-shadow(0 0 .8em #e0586a)}
+.hs.pick .sign{border-color:#e0586a}
+.hs.sel .sign{outline:2px solid var(--blue)}
+.hs.me .sign{border-color:#e8c46a;box-shadow:0 0 0 2px #e8c46a88,0 .2em .5em #000a}
+.hs.vic .hh{animation:vicg 1s ease-in-out infinite alternate}
+@keyframes vicg{from{filter:drop-shadow(0 0 .3em #e0586a)}to{filter:drop-shadow(0 0 1.1em #ff3b50)}}
+.hs.ok .roof,.hs.vic .hb{animation:none}
+</style>
+</head>
+<body>
+<div id="wrap">
+<svg class="forest" viewBox="0 0 400 90" preserveAspectRatio="none"><path fill="#06050d" d="M0 90V55l15-30 12 22 12-34 14 36 13-24 14 30 12-38 15 40 14-26 13 30 12-36 14 38 14-24 12 28 14-34 13 36 14-26 13 32 12-28 14 30 12-36 14 40 13-24 14 28V90z"/></svg>
+<div class="scene"><span class="bat" style="top:14vh">🦇</span><span class="bat" style="top:26vh;animation-delay:7s;font-size:16px">🦇</span>
+<svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice"><defs><symbol id="pn" viewBox="0 0 40 100"><path d="M20 0l11 28h-6l9 22h-7l10 24H3l10-24H6l9-22H9z"/><rect x="18" y="74" width="4" height="26"/></symbol></defs>
+<path fill="#1a1238" d="M0 280Q140 230 300 270T560 262T800 250V400H0z"/>
+<g fill="#0e0a20"><path d="M230 300v-24l14-12 14 12v24zM262 300v-34l12-10 12 10v34zM296 300v-22l13-12 13 12v22zM340 300v-46h14v-18l7-20 7 20v18h14v46z"/><rect x="250" y="262" width="4" height="10"/></g>
+<circle class="win" cx="244" cy="286" r="2.5"/><circle class="win" cx="274" cy="280" r="2.5" style="animation-delay:1s"/><circle class="win" cx="309" cy="288" r="2.5" style="animation-delay:2s"/><circle class="win" cx="361" cy="262" r="2.5" style="animation-delay:.6s"/>
+<path fill="#0b0818" d="M0 335Q200 292 400 328T800 312V400H0z"/>
+<g fill="#0b0818"><use href="#pn" x="20" y="205" width="55" height="140"/><use href="#pn" x="95" y="225" width="45" height="115"/><use href="#pn" x="185" y="250" width="36" height="92"/><use href="#pn" x="410" y="262" width="32" height="82"/><use href="#pn" x="600" y="225" width="50" height="120"/><use href="#pn" x="680" y="205" width="58" height="145"/><use href="#pn" x="755" y="235" width="40" height="110"/></g>
+<path fill="#050309" d="M0 368Q250 346 450 364T800 352V400H0z"/><path fill="#050309" d="M450 366Q510 326 580 352L610 366z"/>
+<g fill="#050309"><path transform="translate(528 340)" d="M0 0L-6 0L-4 -14Q-16 -18 -18 -30Q-18 -42 -12 -50L-8 -62L-14 -76L-10 -80L-2 -72L2 -76L4 -70Q8 -56 8 -44Q20 -38 28 -20Q32 -10 38 -14L36 -4Q24 0 10 0Z"/>
+<use href="#pn" x="-10" y="140" width="95" height="250"/><use href="#pn" x="70" y="200" width="60" height="170"/><use href="#pn" x="690" y="150" width="100" height="250"/><use href="#pn" x="640" y="220" width="55" height="150"/></g></svg></div><div class="mist"></div>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a76a0"/><stop offset="1" stop-color="#4a3c60"/></linearGradient><radialGradient id="gw" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="#fff6cf"/><stop offset="1" stop-color="#f0b23e"/></radialGradient></defs></svg>
+<div id="app"></div>
+</div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R={wolf:['🐺','Werwolf','Ihr fresst jede Nacht ein Dorfmitglied. Tagsüber gebt ihr euch als Unschuldige aus.'],
+seer:['🔮','Seherin','Jede Nacht darfst du die wahre Identität einer Person erfahren.'],
+witch:['🧪','Hexe','Du hast einen Heiltrank und einen Gifttrank – jeden nur einmal im Spiel.'],
+hunter:['🏹','Jäger','Wirst du getötet, darfst du im letzten Atemzug eine Person mitnehmen.'],
+amor:['💘','Amor','In der ersten Nacht verkuppelst du zwei Personen. Stirbt eine, stirbt auch die andere. Du gewinnst nur zusammen mit dem Liebespaar, wenn die beiden als Letzte übrig bleiben. Sterben beide Verliebten, darfst du in der nächsten Nacht ein neues Paar verkuppeln – dann gewinnst du mit dem Dorf, und das neue Paar mit seinem ursprünglichen Team.'],
+villager:['🏡','Dorfbewohner','Du hast keine Spezialkraft – nur deinen Verstand. Finde die Werwölfe!']};
+let db=null,code='',me={id:'',name:''},G=null,P={},seen={},isHost=false,showRole=false,err='',ctr=0,pv=null;
+try{me.id=localStorage.getItem('wpid')||('p'+Math.random().toString(36).slice(2,10));localStorage.setItem('wpid',me.id);me.name=localStorage.getItem('wnm')||''}catch(e){me.id='p'+Math.random().toString(36).slice(2,10)}
+const moon='<svg class="moon" width="84" height="84" viewBox="0 0 100 100"><defs><radialGradient id="mg" cx="40%" cy="35%"><stop offset="0" stop-color="#fff6d6"/><stop offset="1" stop-color="#e8c46a"/></radialGradient></defs><circle cx="50" cy="50" r="38" fill="url(#mg)"/><circle cx="38" cy="40" r="7" fill="#d9b25a" opacity=".5"/><circle cx="60" cy="58" r="10" fill="#d9b25a" opacity=".4"/><path d="M30 78l8-16 6 8 6-18 8 20 6-10 8 16z" fill="#0b0d1a"/></svg>';
+const gref=()=>db.doc('games/'+code), pref=id=>db.doc('games/'+code+'/p/'+id);
+const save=()=>gref().set(JSON.parse(JSON.stringify(G)));
+const al=r=>G.players.filter(p=>p.alive&&(!r||p.role===r));
+const me_=()=>G&&G.players.find(p=>p.id===me.id);
+const nm=id=>{const p=G.players.find(x=>x.id===id);return p?p.name:'?'};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---------- Verbindung ---------- */
+async function boot(){
+  db=null;
+  render();
+}
+async function create(){
+  me.name=$('#nm').value.trim();if(!me.name){err='Bitte gib einen Namen ein.';return render()}
+  try{localStorage.setItem('wnm',me.name)}catch(e){}
+  if(!window.Peer){err='Verbindungsbibliothek konnte nicht geladen werden.';return render()}
+  let ok=false;
+  for(let i=0;i<6&&!ok;i++){
+    code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+    try{db=await hostDb(code);ok=true}catch(e){}
+  }
+  if(!ok){err='Keine Verbindung zum Vermittlungsserver. Bitte später erneut versuchen.';db=null;return render()}
+  G={st:'lobby',host:me.id,players:[],rd:1,msg:''};isHost=true;
+  await save();await join(true)
+}
+async function joinGame(){
+  me.name=$('#nm').value.trim();code=$('#cd').value.trim().toUpperCase();
+  if(!me.name||code.length!==4){err='Name und 4-stelligen Code eingeben.';return render()}
+  try{localStorage.setItem('wnm',me.name)}catch(e){}
+  if(!window.Peer){err='Verbindungsbibliothek konnte nicht geladen werden.';return render()}
+  try{db=await clientDb(code)}catch(e){db=null;err='Dieses Spiel gibt es nicht (oder keine Verbindung).';return render()}
+  const s=await gref().get();
+  if(!s.exists){err='Dieses Spiel gibt es nicht.';return render()}
+  const g=s.data();
+  if(g.st!=='lobby'&&!g.players.find(p=>p.id===me.id)){err='Das Spiel läuft schon.';return render()}
+  isHost=g.host===me.id;await join(false)
+}
+async function join(){
+  await pref(me.id).set({name:me.name,a:null});
+  gref().onSnapshot(s=>{if(s.exists){G=s.data();if(G.host===me.id)isHost=true;render()}});
+  if(isHost)db.collection('games/'+code+'/p').onSnapshot(s=>{P={};s.docs.forEach(d=>P[d.id]=d.data());tick()})
+}
+function act(k,t){
+  const a={k,t:t||null,st:G.st,rd:G.rd,n:Date.now()*10+(ctr++%10)};
+  pref(me.id).set({name:me.name,a});
+}
+
+/* ---------- Vorschau-Modus (alles lokal, ein Gerät) ---------- */
+function mockDb(hook){
+  const docs={},subs=[];
+  const sn=p=>({id:p.split('/').pop(),exists:p in docs,data:()=>p in docs?JSON.parse(JSON.stringify(docs[p])):undefined,metadata:{}});
+  const kids=c=>Object.keys(docs).filter(k=>k.startsWith(c+'/')&&!k.slice(c.length+1).includes('/'));
+  const fire=()=>setTimeout(()=>subs.slice().forEach(s=>s.f()),0);
+  const sub=s=>{subs.push(s);setTimeout(s.f,0);return()=>subs.splice(subs.indexOf(s),1)};
+  const doc=p=>({id:p.split('/').pop(),path:p,
+    get:async()=>sn(p),
+    set:async d=>{docs[p]=JSON.parse(JSON.stringify(d));fire();if(hook&&hook.set)hook.set(p,docs[p])},
+    update:async d=>{docs[p]=Object.assign(docs[p]||{},d);fire()},
+    delete:async()=>{delete docs[p];fire()},
+    onSnapshot:f=>sub({f:()=>f(sn(p))})});
+  const collection=c=>({path:c,onSnapshot:f=>sub({f:()=>{const d=kids(c).map(sn);f({docs:d,size:d.length,empty:!d.length,metadata:{}})}})});
+  return{doc,collection,put:(p,d)=>{docs[p]=d;fire()},get:p=>docs[p]}
+}
+/* ---------- Mehrspieler über WebRTC (PeerJS): Spielleiter = Server ---------- */
+const PRE='werwolf-dd-';
+function hostDb(c){return new Promise((res,rej)=>{
+  const conns=new Set(),gp='games/'+c;
+  const st=mockDb({set:(p,d)=>{if(p===gp)conns.forEach(x=>{if(x.open)x.send({t:'doc',path:p,data:d})})}});
+  const peer=new Peer(PRE+c);
+  peer.on('open',()=>res(st));
+  peer.on('error',e=>{if(e.type==='unavailable-id'||!st.get(gp))rej(e);else console.error(e)});
+  peer.on('connection',x=>{
+    conns.add(x);
+    x.on('open',()=>{const g=st.get(gp);if(g)x.send({t:'doc',path:gp,data:g})});
+    x.on('data',m=>{if(m&&m.t==='set'&&typeof m.path==='string'&&m.path.startsWith(gp+'/p/'))st.put(m.path,m.data)});
+    x.on('close',()=>conns.delete(x))})
+})}
+function clientDb(c){return new Promise((res,rej)=>{
+  let conn,ready=false;const gp='games/'+c;
+  const st=mockDb({set:(p,d)=>{if(conn&&conn.open&&p.startsWith(gp+'/p/'))conn.send({t:'set',path:p,data:d})}});
+  const peer=new Peer(),to=setTimeout(()=>rej(new Error('timeout')),10000);
+  peer.on('error',e=>{if(!ready){clearTimeout(to);rej(e)}});
+  peer.on('open',()=>{
+    conn=peer.connect(PRE+c,{reliable:true});
+    conn.on('data',m=>{if(m&&m.t==='doc'){st.put(m.path,m.data);if(!ready){ready=true;clearTimeout(to);res(st)}}});
+    conn.on('close',()=>{if(ready)alert('Die Verbindung zum Spielleiter wurde getrennt. Bitte lade die Seite neu und tritt erneut bei.')})})
+})}
+async function preview(){
+  const n=Math.min(10,Math.max(4,parseInt($('#pn').value)||10));
+  const N=['Anna','Ben','Clara','David','Emma','Felix','Greta','Hannes','Ida','Jonas'];
+  db=mockDb();code='TEST';isHost=true;showRole=false;
+  pv=N.slice(0,n).map((x,i)=>({id:'v'+i,name:x}));
+  G={st:'lobby',host:'v0',players:[],rd:1,msg:''};await save();
+  for(const p of pv.slice(1))await pref(p.id).set({name:p.name,a:null});
+  me={id:'v0',name:N[0]};await join()
+}
+function needs(p){
+  if(!G)return false;const s=G.st;if(s==='hunter')return !!G.hn&&G.hn.id===p.id;if(s==='heir')return !!G.hr&&G.hr.id===p.id;if(!p.alive)return false;if(s==='amor')return p.role==='amor';if(s==='mayor')return !G.mv[p.id];if(s==='day')return !(G.dsc&&G.dsc[p.id]);
+  if(s==='wolves')return p.role==='wolf'&&!G.wv[p.id];
+  if(s==='seer')return p.role==='seer';
+  if(s==='witch')return p.role==='witch';
+  if(s==='vote')return !G.vt[p.id];
+  return false
+}
+function switchTo(p){me={id:p.id,name:p.name};showRole=false;render();window.scrollTo(0,0)}
+function bar(){
+  return '<div class="bar"><div class="mute" style="width:100%">👁 Vorschau – tippe auf eine Person, um als sie zu spielen (rot = ist gerade dran)</div>'+
+  G.players.map(p=>'<button class="chip'+(p.id===me.id?' me':'')+(p.alive?'':' dead')+(needs(p)?' todo':'')+'" data-sw="'+p.id+'">'+(p.role?R[p.role][0]+' ':'')+esc(p.name)+'</button>').join('')+
+  '<button class="chip" id="nx">▶ Nächste Aktion</button><button class="chip" id="ex">Beenden</button></div>'
+}
+
+/* ---------- Host-Engine ---------- */
+function tick(){
+  if(!isHost||!G)return;
+  if(G.st==='lobby'){
+    const pl=Object.entries(P).map(([id,v])=>({id,name:v.name,alive:true}));
+    if(JSON.stringify(pl.map(x=>x.id+x.name))!==JSON.stringify(G.players.map(x=>x.id+x.name))){G.players=pl;save()}
+    return}
+  let ch=false;
+  for(const [id,v] of Object.entries(P)){
+    const a=v.a;if(!a||a.n<=(seen[id]||0))continue;seen[id]=a.n;
+    if(a.st!==G.st||a.rd!==G.rd)continue;
+    if(handle(id,a))ch=true}
+  if(ch)save()
+}
+function startGame(){hostEnd=Date.now()+45000;
+  const pl=G.players,n=pl.length;if(n<4)return;
+  const w=Math.floor((n+2)/4),roles=[...Array(w).fill('wolf'),'seer',...(n>=6?['witch']:[]),...(n>=7?['hunter']:[]),...(n>=8?['amor']:[])];
+  while(roles.length<n)roles.push('villager');shuffle(roles);
+  pl.forEach((p,i)=>{p.role=roles[i];p.alive=true;p.shot=false});
+  Object.assign(G,{rd:1,heal:true,poison:true,wv:{},vt:{},kill:null,saved:false,pz:null,sr:null,kn:{},mayor:null,mv:{},dsc:{},wm:'',tl:roles.includes('amor')?0:45,tk:Date.now(),lv:null,hn:null,dd:[],ddk:0,st:roles.includes('amor')?'amor':'wolves',msg:'Das Spiel beginnt. Die erste Nacht bricht an …'});
+  save()
+}
+function next(){G.tl=0;hostEnd=0;
+  const o=['amor','wolves','seer','witch'];let i=o.indexOf(G.st)+1;
+  for(;i<4;i++){
+    if(o[i]==='wolves')break;
+    if(o[i]==='seer'&&al('seer').length)break;
+    if(o[i]==='witch'&&al('witch').length&&(G.heal||G.poison))break}
+  if(i<4){G.st=o[i];G.sr=null;if(o[i]==='wolves')setT(30)}else dawn()
+}
+function win(){
+  const w=al('wolf').length,o=al().length-w;
+  if(!G.rg&&G.lv&&G.lv.length===2&&al().length===2&&G.lv.every(id=>al().some(x=>x.id===id))){G.st='end';G.win='love';return true}
+  if(!w){G.st='end';G.win='village';return true}
+  if(w>=o){G.st='end';G.win='wolf';return true}return false
+}
+let CAUSE='';
+function kill(ids,why){
+  const out=[],q=[...new Set(ids)].filter(Boolean),ch=new Set();
+  while(q.length){
+    const id=q.shift(),p=G.players.find(x=>x.id===id);if(!p||!p.alive)continue;
+    p.alive=false;G.dd.push({n:p.name,r:p.role,c:ch.has(id)?'love':(why||CAUSE),w:ch.has(id)?'Gestorben an gebrochenem Herzen':''});out.push(p.name+' ('+R[p.role][1]+')');
+    if(G.lv&&G.lv.includes(id))G.lv.forEach(l=>{if(l!==id){q.push(l);ch.add(l)}})}
+  G.ddk=Date.now();return out
+}
+function after(f){
+  const h=G.players.find(p=>p.role==='hunter'&&!p.alive&&!p.shot);
+  if(h){G.hn={id:h.id,f};G.st='hunter';G.tl=0;return}
+  if(win()){G.tl=0;return}
+  if(G.mayor&&!G.players.find(x=>x.id===G.mayor&&x.alive)&&al().length){G.hr={id:G.mayor,f};G.st='heir';G.tl=0;return}
+  if(f==='dawn'){G.tl=0;G.dsc={};G.mv={};const ma=G.mayor&&G.players.find(x=>x.id===G.mayor&&x.alive);G.mp=!ma;if(!ma)G.mayor=null;G.st='day'}else{G.rd++;if(G.lv&&G.lv.length===2&&G.lv.every(id=>!G.players.find(x=>x.id===id&&x.alive))&&al('amor').length){G.lv=null;G.rg=(G.rg||0)+1;G.st='amor'}else{G.st='wolves';setT(30)}}
+}
+function killOld(ids){
+  const u=[...new Set(ids)].filter(Boolean);
+  u.forEach(id=>{const p=G.players.find(x=>x.id===id);if(p)p.alive=false});
+  return u.map(id=>nm(id)+' ('+R[G.players.find(x=>x.id===id).role][1]+')')
+}
+function dawn(){
+  G.dd=[];const d=[...kill([G.saved?null:G.kill],'wolf'),...kill([G.pz],'poison')];
+  G.msg=d.length?'In der Nacht ist gestorben: '+d.join(', ')+'.':'Niemand ist in dieser Nacht gestorben!';
+  G.kill=null;G.saved=false;G.pz=null;G.wv={};G.vt={};
+  after('dawn')
+}
+function handle(id,a){
+  const p=G.players.find(x=>x.id===id);const t=a.t;
+  if(G.st==='hunter'){if(!p||G.hn.id!==id||a.k!=='shoot'||!al().some(x=>x.id===t))return false;G.dd=[];const d=kill([t],'hunter');p.shot=true;G.msg=(G.msg?G.msg+' ':'')+'Der Jäger '+p.name+' schießt im Todeskampf auf '+d.join(', ')+'!';const f=G.hn.f;G.hn=null;after(f);return true}
+  if(G.st==='heir'){if(!p||!G.hr||G.hr.id!==id||a.k!=='heir'||!al().some(x=>x.id===t))return false;G.mayor=t;G.msg=(G.msg?G.msg+' ':'')+'🎖️ '+p.name+' ernennt '+nm(t)+' vom Sterbebett aus zum neuen Bürgermeister!';const f=G.hr.f;G.hr=null;after(f);return true}
+  if(!p||!p.alive)return false;
+  if(G.st==='amor'&&p.role==='amor'){if(a.k!=='love'||!al().some(x=>x.id===t))return false;G.lv=G.lv||[];if(G.lv.includes(t))return false;G.lv.push(t);if(G.lv.length===2)next();return true}
+  if(G.st==='wolves'&&p.role==='wolf'){
+    if(!al().some(x=>x.id===t&&x.role!=='wolf'))return false;
+    G.wv[id]=t;
+    if(al('wolf').every(x=>G.wv[x.id])){resWolves(false);return true}if(0){
+      const c={};Object.values(G.wv).forEach(v=>c[v]=(c[v]||0)+1);
+      G.kill=Object.keys(c).sort((x,y)=>c[y]-c[x])[0];next()}
+    return true}
+  if(G.st==='seer'&&p.role==='seer'){
+    if(a.k==='pick'&&!G.sr){const q=al().find(x=>x.id===t&&x.id!==id);if(!q)return false;G.sr={id:t,role:q.role};G.kn=G.kn||{};G.kn[id]=G.kn[id]||{};G.kn[id][t]=q.role;return true}
+    if(a.k==='ok'&&G.sr){next();return true}return false}
+  if(G.st==='witch'&&p.role==='witch'){
+    if(a.k==='heal'&&G.heal&&G.kill){G.heal=false;G.saved=true;return true}
+    if(a.k==='poison'&&G.poison&&al().some(x=>x.id===t)){G.poison=false;G.pz=t;return true}
+    if(a.k==='done'){next();return true}return false}
+  if(G.st==='day'&&a.k==='ready'){G.dsc=G.dsc||{};G.dsc[id]=true;if(Object.keys(G.dsc).filter(k=>al().some(x=>x.id===k)).length>al().length/2)toVote2();return true}
+  if(G.st==='mayor'&&a.k==='mvote'){if(!al().some(x=>x.id===t))return false;G.mv[id]=t;if(al().every(x=>G.mv[x.id]))resMayor();return true}
+  if(G.st==='vote'&&a.k==='vote'){
+    if(!al().some(x=>x.id===t))return false;G.vt[id]=t;
+    if(al().every(x=>G.vt[x.id])){resVote();return true}if(0){
+      const c={};Object.values(G.vt).forEach(v=>c[v]=(c[v]||0)+1);
+      G.dd=[];const m=Math.max(...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===m);
+      if(top.length>1)G.msg='Gleichstand – das Dorf konnte sich nicht einigen. Niemand wird verbannt.';
+      else G.msg='Das Dorf hat entschieden: '+kill(top)[0]+' wird verbannt.';
+      G.vt={};G.wv={};
+      after('vote')}
+    return true}
+  return false
+}
+let hostEnd=0,lastTk=0,tStart=0;
+function setT(s){s=45;G.tk=Date.now();G.tl=s;hostEnd=G.tk+s*1000}
+function timerSync(){if(G&&G.tl&&G.tk!==lastTk){lastTk=G.tk;tStart=Date.now()}}
+const timerHtml=()=>G.tl?'<div class="tmr"><i id="tmb"></i><b id="tmt"></b></div>':'';
+setInterval(()=>{
+  if(!G||!G.tl)return;timerSync();
+  const rem=Math.max(0,G.tl-(Date.now()-tStart)/1000),b=$('#tmb'),t=$('#tmt');
+  if(b)b.style.width=(rem/G.tl*100)+'%';if(t)t.textContent=Math.ceil(rem)+' s';
+  if(isHost&&hostEnd&&Date.now()>=hostEnd)timeout()
+},300);
+function timeout(){
+  hostEnd=0;
+  if(G.st==='wolves')resWolves(true);else if(G.st==='mayor')resMayor();else if(G.st==='vote')resVote();else return;
+  save()
+}
+function resWolves(force){
+  const c={};Object.values(G.wv).forEach(v=>c[v]=(c[v]||0)+1);
+  const ks=Object.keys(c).sort((x,y)=>c[y]-c[x]),uniq=ks.length&&(ks.length===1||c[ks[0]]>c[ks[1]]);
+  if(uniq){G.kill=ks[0];G.wm='';next();return}
+  if(force){G.kill=null;G.wm='';next();return}
+  G.wv={};G.wm='Keine Einigung! Ihr müsst euch auf ein Opfer einigen – stimmt neu ab.';setT(30)
+}
+function resMayor(){
+  const c={};Object.values(G.mv).forEach(v=>c[v]=(c[v]||0)+1);
+  const mx=Math.max(0,...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===mx);
+  if(mx){G.mayor=top[Math.floor(Math.random()*top.length)];G.msg=(G.msg?G.msg+' ':'')+'🎖️ '+nm(G.mayor)+' ist neue/r Bürgermeister/in und hat bei Abstimmungen 2 Stimmen!'+(top.length>1?' (Gleichstand – das Los hat entschieden)':'')}
+  else{G.mayor=null;G.msg=(G.msg?G.msg+' ':'')+'Niemand hat gewählt – es gibt keinen Bürgermeister.'}
+  G.st='day';G.tl=0;G.dsc={};G.mv={}
+}
+function resVote(){
+  const c={};Object.entries(G.vt).forEach(([id,v])=>c[v]=(c[v]||0)+(id===G.mayor?2:1));
+  G.dd=[];CAUSE='vote';const mx=Math.max(0,...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===mx);
+  if(!mx)G.msg='Niemand hat abgestimmt – niemand wird verbannt.';
+  else if(top.length>1)G.msg='Gleichstand – das Dorf konnte sich nicht einigen. Niemand wird verbannt.';
+  else G.msg='Das Dorf hat entschieden: '+kill(top)[0]+' wird verbannt.';
+  G.vt={};G.wv={};G.wm='';after('vote')
+}
+function toVote2(){if(G.mp){G.mp=false;G.st='mayor';G.mv={};G.dsc={};setT(45);return}G.st='vote';G.vt={};G.msg='';setT(45)}
+function toVote(){G.st='vote';G.vt={};G.msg='';save()}
+
+/* ---------- Anzeige ---------- */
+let PM=null;
+const LB={wolf:'🐺 Dieses Opfer fressen',pick:'🔮 Diese Person ansehen',poison:'☠️ Vergiften',love:'💘 Verkuppeln',vote:'🗳️ Verbannen',shoot:'🏹 Erschießen',mvote:'🎖️ Zum Bürgermeister wählen',heir:'🎖️ Zur Nachfolge ernennen'};
+const pk=id=>PM&&(PM.k==='love'?(G.lv||[]).includes(id):PM.cur===id);
+function picker(list,cur,kind){PM={k:kind,valid:list.map(p=>p.id),cur};return '<p class="msg">👇 Tippe unten im Dorf auf ein Haus, um die Person auszuwählen.</p>'}
+function pickerOld(list,cur,kind){
+  return '<div class="grid">'+list.map(p=>'<button class="sec'+(cur===p.id?' sel':'')+'" data-k="'+kind+'" data-t="'+p.id+'">'+esc(p.name)+'</button>').join('')+'</div>'
+}
+function roleCard(m){
+  const r=R[m.role];if(!showRole)return '';
+  return '<div class="card sheet"><div class="role '+m.role+'"><div class="big">'+r[0]+'</div><h2>'+r[1]+'</h2><p class="mute">'+r[2]+'</p>'+(m.role==='wolf'&&al('wolf').length>1?'<p>Deine Rudelmitglieder: '+al('wolf').filter(x=>x.id!==m.id).map(x=>esc(x.name)).join(', ')+'</p>':'')+'</div><p class="mute">Symbole am Haus: ⭐ du · 💀 tot · 🐺 Rudel · 💘 verliebt · 🔮 gesehen · 🎯 deine Wahl</p><button class="sec" id="rl">Schließen</button></div>'
+}
+function roleCardOld(m){
+  const r=R[m.role];
+  return '<div class="card"><button class="sec" id="rl">'+(showRole?'Rolle verbergen':'🂠 Meine Rolle ansehen')+'</button>'+
+  (showRole?'<div class="role '+m.role+'"><div class="big">'+r[0]+'</div><h2>'+r[1]+'</h2><p class="mute">'+r[2]+'</p>'+
+  (m.role==='wolf'&&al('wolf').length>1?'<p>Deine Rudelmitglieder: '+al('wolf').filter(x=>x.id!==m.id).map(x=>esc(x.name)).join(', ')+'</p>':'')+'</div>':'')+'</div>'
+}
+let sel=null;
+const AV=['🧑‍🌾','👩‍🍳','🧙','👨‍🚒','👩‍⚕️','🧑‍🎨','👴','👵','🧑‍🏫','🧔','🧒','👷'];
+const av=p=>AV[G.players.indexOf(p)%AV.length];
+const lvp=()=>G.players.find(x=>x.id===G.lv.find(y=>y!==me.id));
+function know(pid){
+  const p=G.players.find(x=>x.id===pid),m=me_(),k={role:null,tags:[],why:[]};
+  if(pid===me.id){k.role=p.role;k.tags.push('⭐');k.why.push('Das bist du.')}
+  if(!p.alive){k.role=p.role;k.tags.push('💀');k.why.push('Gestorben – die Rolle wurde für alle aufgedeckt.')}
+  if(m.role==='wolf'&&p.role==='wolf'&&pid!==me.id){k.role=p.role;k.tags.push('🐺');k.why.push('Mitglied deines Rudels.')}
+  if(G.lv&&G.lv.includes(pid)&&pid!==me.id){
+    if(G.lv.includes(me.id)&&G.st!=='amor'){k.role=p.role;k.tags.push('💘');k.why.push('Dein Verliebter bzw. deine Verliebte – ihr kennt eure Rollen.')}
+    else if(m.role==='amor'){k.tags.push('💘');k.why.push('Von dir verkuppelt (verliebt).')}}
+  if(G.kn&&G.kn[me.id]&&G.kn[me.id][pid]){k.role=p.role;k.tags.push('🔮');k.why.push('Du hast diese Rolle als Seherin gesehen.')}
+  return k
+}
+function infoCard(){
+  const p=sel&&G.players.find(x=>x.id===sel);if(!p)return '';const k=know(p.id);
+  return '<div class="card sheet"><h2>'+(p.alive?av(p):'🪦')+' '+esc(p.name)+(p.id===me.id?' (du)':'')+'</h2><p>'+(p.alive?'🕯️ Lebt noch':'💀 Tot')+'</p>'+(PM&&PM.valid.includes(p.id)?'<button class="red" data-k="'+PM.k+'" data-t="'+p.id+'">'+LB[PM.k]+'</button>':'')+
+  (k.role?'<div class="role '+(k.role==='wolf'?'wolf':'')+'" style="padding:10px"><div class="big" style="font-size:38px">'+R[k.role][0]+'</div><b>'+R[k.role][1]+'</b></div>':'<p class="mute">❓ Rolle unbekannt – beobachte genau!</p>')+
+  k.why.map(w=>'<p class="mute">• '+w+'</p>').join('')+'<button class="sec" data-pl="'+p.id+'">Schließen</button></div>'
+}
+addEventListener('resize',()=>{if(G&&G.st!=='lobby')render()});
+const houseSvg=rc=>'<svg viewBox="0 0 100 100"><g class="sm"><circle cx="74" cy="6" r="3.5"/><circle cx="74" cy="6" r="4.5"/></g><rect x="68" y="12" width="12" height="28" fill="#4b3a52"/><rect x="66" y="8" width="16" height="6" rx="1.5" fill="#34283b"/><rect x="14" y="42" width="72" height="56" rx="3" fill="url(#wl)"/><path d="M14 98H86M14 56H34M14 84H34M66 98V88" stroke="#2b1d33" stroke-width="1.2" opacity=".45"/><polygon points="3,45 50,5 97,45" style="fill:'+rc+'" stroke="#2a0f18" stroke-width="2.5" stroke-linejoin="round"/><path d="M15 37H85M25 28H75M36 19H64" stroke="#0000004d" stroke-width="1.8" stroke-linecap="round"/><rect x="36" y="52" width="46" height="34" rx="4" class="winl"/><rect x="32" y="86" width="54" height="4.5" rx="2" fill="#2b1d33"/><rect x="18" y="68" width="13" height="30" rx="6.5" fill="#4a2a1e" stroke="#2b1d33" stroke-width="1.5"/><circle cx="27.5" cy="84" r="1.5" fill="#e8c46a"/></svg>';
+function playersCard(){
+  const n=G.players.length,asp=innerWidth/Math.max(300,innerHeight*.62);
+  const cols=Math.max(2,Math.min(n,Math.round(Math.sqrt(n*asp)))),rows=Math.ceil(n/cols),pos={};
+  G.players.forEach((p,i)=>{const r=Math.floor(i/cols),c=i%cols,off=(cols-Math.min(cols,n-r*cols))/2,j=((i*37)%11-5)/5,jy=((i*53)%9-4)/4;
+    pos[p.id]={x:(c+off+.5+(r%2?.09:-.09)+j*.04)/cols*100,y:(r+.5+jy*.05)/rows*100}});
+  const m=me_(),VS=G.st==='wolves'?(m.alive&&m.role==='wolf'?G.wv:null):G.st==='vote'?G.vt:G.st==='mayor'?G.mv:null,cnt={},nms={};
+  const mk=G.st==='wolves'?['mk1','#e0586a']:G.st==='mayor'?['mk3','#7aa2ff']:['mk2','#e8c46a'];let arr='';
+  if(VS)Object.entries(VS).forEach(([v,t])=>{
+    cnt[t]=(cnt[t]||0)+((G.st==='vote'&&v===G.mayor)?2:1);(nms[t]=nms[t]||[]).push(nm(v));
+    const a=pos[v],b=pos[t];if(!a||!b)return;const dx=b.x-a.x,dy=b.y-a.y;
+    arr+='<line x1="'+(a.x+dx*.18).toFixed(1)+'" y1="'+(a.y+dy*.18).toFixed(1)+'" x2="'+(a.x+dx*.82).toFixed(1)+'" y2="'+(a.y+dy*.82).toFixed(1)+'" stroke="'+mk[1]+'" stroke-width="2.4" vector-effect="non-scaling-stroke" marker-end="url(#'+mk[0]+')" opacity=".9"/>'});
+  const svg='<svg class="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"><defs>'+[['mk1','#e0586a'],['mk2','#e8c46a'],['mk3','#7aa2ff']].map(a=>'<marker id="'+a[0]+'" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="'+a[1]+'"/></marker>').join('')+'</defs>'+arr+'</svg>';
+  const pal=['#a03a4a','#8a4b2a','#2f6a6a','#6a3f8a','#4a6a2f','#a0642a'];
+  return '<div class="field" style="--c:'+cols+';--r:'+rows+'">'+svg+G.players.map((p,i)=>{
+    const k=know(p.id),c=cnt[p.id],vic=G.st==='witch'&&m.role==='witch'&&m.alive&&G.kill===p.id&&!G.saved;
+    const tg=k.tags.concat(p.id===G.mayor&&p.alive?['🎖️']:[],vic?['🩸']:[],pk(p.id)?['🎯']:[]).map(t=>'<span>'+t+'</span>').join('');
+    return '<button class="hs'+(p.alive?'':' dead')+(p.id===me.id?' me':'')+(sel===p.id?' sel':'')+(PM&&PM.valid.includes(p.id)?' ok':'')+(pk(p.id)?' pick':'')+(vic?' vic':'')+'" data-pl="'+p.id+'" style="left:'+pos[p.id].x.toFixed(1)+'%;top:'+pos[p.id].y.toFixed(1)+'%">'+(c?'<div class="vt">'+c+' Stimme'+(c===1?'':'n')+'</div>':'')+'<div class="hh">'+houseSvg(pal[i%6])+'<div class="av">'+(p.alive?av(p):'🪦')+'</div><div class="tgs">'+tg+'</div></div><div class="sign"><div class="nm">'+esc(p.name)+'</div><div class="rl">'+(k.role?R[k.role][0]+' '+R[k.role][1]:'❓')+'</div></div>'+(nms[p.id]?'<div class="vn">'+nms[p.id].map(esc).join(', ')+'</div>':'')+'</button>'}).join('')+'</div>'+infoCard()
+}
+function playersCard4(){
+  const n=G.players.length,asp=innerWidth/Math.max(300,innerHeight*.62);
+  const cols=Math.max(2,Math.min(n,Math.round(Math.sqrt(n*asp)))),rows=Math.ceil(n/cols),pos={};
+  G.players.forEach((p,i)=>{const r=Math.floor(i/cols),c=i%cols,off=(cols-Math.min(cols,n-r*cols))/2,j=((i*37)%11-5)/5,jy=((i*53)%9-4)/4;
+    pos[p.id]={x:(c+off+.5+(r%2?.09:-.09)+j*.04)/cols*100,y:(r+.5+jy*.05)/rows*100}});
+  const m=me_(),VS=G.st==='wolves'?(m.alive&&m.role==='wolf'?G.wv:null):G.st==='vote'?G.vt:G.st==='mayor'?G.mv:null,cnt={},nms={};
+  const mk=G.st==='wolves'?['mk1','#e0586a']:G.st==='mayor'?['mk3','#7aa2ff']:['mk2','#e8c46a'];let arr='';
+  if(VS)Object.entries(VS).forEach(([v,t])=>{
+    cnt[t]=(cnt[t]||0)+((G.st==='vote'&&v===G.mayor)?2:1);(nms[t]=nms[t]||[]).push(nm(v));
+    const a=pos[v],b=pos[t];if(!a||!b)return;const dx=b.x-a.x,dy=b.y-a.y;
+    arr+='<line x1="'+(a.x+dx*.18).toFixed(1)+'" y1="'+(a.y+dy*.18).toFixed(1)+'" x2="'+(a.x+dx*.82).toFixed(1)+'" y2="'+(a.y+dy*.82).toFixed(1)+'" stroke="'+mk[1]+'" stroke-width="2.4" vector-effect="non-scaling-stroke" marker-end="url(#'+mk[0]+')" opacity=".9"/>'});
+  const svg='<svg class="arrows" viewBox="0 0 100 100" preserveAspectRatio="none"><defs>'+[['mk1','#e0586a'],['mk2','#e8c46a'],['mk3','#7aa2ff']].map(a=>'<marker id="'+a[0]+'" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="'+a[1]+'"/></marker>').join('')+'</defs>'+arr+'</svg>';
+  return '<div class="field" style="--c:'+cols+';--r:'+rows+'">'+svg+G.players.map(p=>{
+    const k=know(p.id),c=cnt[p.id];
+    return '<button class="hs'+(p.alive?'':' dead')+(p.id===me.id?' me':'')+(sel===p.id?' sel':'')+(PM&&PM.valid.includes(p.id)?' ok':'')+(pk(p.id)?' pick':'')+(G.st==='witch'&&m.role==='witch'&&m.alive&&G.kill===p.id&&!G.saved?' vic':'')+'" data-pl="'+p.id+'" style="left:'+pos[p.id].x.toFixed(1)+'%;top:'+pos[p.id].y.toFixed(1)+'%">'+(c?'<div class="vt">'+c+' Stimme'+(c===1?'':'n')+'</div>':'')+'<div class="roof"></div><div class="hb"><div class="av">'+(p.alive?av(p):'🪦')+'</div><div class="nm">'+esc(p.name)+'</div><div class="tg">'+k.tags.join('')+(p.id===G.mayor&&p.alive?'🎖️':'')+(G.st==='witch'&&m.role==='witch'&&m.alive&&G.kill===p.id&&!G.saved?'🩸':'')+(pk(p.id)?'🎯':'')+'</div><div class="rl">'+(k.role?R[k.role][0]+' '+R[k.role][1]:'❓')+'</div>'+(nms[p.id]?'<div class="vn">'+nms[p.id].map(esc).join(', ')+'</div>':'')+'</div></button>'}).join('')+'</div>'+infoCard()
+}
+function playersCard3(){
+  const n=G.players.length,asp=innerWidth/Math.max(300,innerHeight*.62);
+  const cols=Math.max(2,Math.min(n,Math.round(Math.sqrt(n*asp)))),rows=Math.ceil(n/cols);
+  return '<div class="field" style="--c:'+cols+';--r:'+rows+'">'+G.players.map((p,i)=>{
+    const r=Math.floor(i/cols),c=i%cols,off=(cols-Math.min(cols,n-r*cols))/2,j=((i*37)%11-5)/5,jy=((i*53)%9-4)/4;
+    const x=((c+off+.5+(r%2?.09:-.09)+j*.04)/cols*100).toFixed(1),y=((r+.5+jy*.05)/rows*100).toFixed(1),k=know(p.id);
+    return '<button class="hs'+(p.alive?'':' dead')+(p.id===me.id?' me':'')+(sel===p.id?' sel':'')+(PM&&PM.valid.includes(p.id)?' ok':'')+(pk(p.id)?' pick':'')+'" data-pl="'+p.id+'" style="left:'+x+'%;top:'+y+'%"><div class="roof"></div><div class="hb"><div class="av">'+(p.alive?av(p):'🪦')+'</div><div class="nm">'+esc(p.name)+'</div><div class="tg">'+k.tags.join('')+(pk(p.id)?'🎯':'')+'</div><div class="rl">'+(k.role?R[k.role][0]+' '+R[k.role][1]:'❓')+'</div></div></button>'}).join('')+'</div>'+infoCard()
+}
+function playersCard2(){
+  return '<div class="card"><h2>🏘️ Das Dorf</h2><p class="mute">Tippe auf ein Haus für Infos. Alles, was du über eine Person weißt, bleibt dauerhaft markiert (⭐ du · 💀 tot · 🐺 Rudel · 💘 verliebt · 🔮 gesehen).</p><div class="vil">'+
+  G.players.map(p=>{const k=know(p.id);return '<button class="hs'+(p.alive?'':' dead')+(p.id===me.id?' me':'')+(sel===p.id?' sel':'')+(PM&&PM.valid.includes(p.id)?' ok':'')+(pk(p.id)?' pick':'')+'" data-pl="'+p.id+'"><div class="roof"></div><div class="hb"><div class="av">'+(p.alive?av(p):'🪦')+'</div><div class="nm">'+esc(p.name)+'</div><div class="tg">'+k.tags.join('')+(pk(p.id)?'🎯':'')+'</div><div class="rl">'+(k.role?R[k.role][0]+' '+R[k.role][1]:'❓')+'</div></div></button>'}).join('')+'</div></div>'+infoCard()
+}
+function playersCardOld(){
+  return '<div class="card"><h2>Dorfbewohner</h2>'+G.players.map(p=>'<div class="pl'+(p.alive?'':' dead')+'"><span>'+(p.alive?'🕯️':'💀')+'</span>'+esc(p.name)+(p.id===me.id?' (du)':'')+'<span class="badge">'+(p.alive?'':R[p.role][1])+'</span></div>').join('')+'</div>'
+}
+function sleepCard(txt){return '<div class="card fog"><div class="big">🌙</div><h2 style="text-align:center">Es ist Nacht</h2><p class="mute" style="text-align:center">'+txt+'</p></div>'}
+
+function gameView(){
+  PM=null;document.body.classList.toggle('ingame',G.st!=='end');const m=me_();let h='';
+  document.body.classList.toggle('day',G.st==='day'||G.st==='vote'||(G.st==='end'));
+  if(!m)return '<div class="card"><p>Du bist in diesem Spiel nicht dabei.</p></div>';
+  if(G.st==='end'){
+    const wv=G.win==='village';
+    return '<div class="card"><div class="big">'+(G.win==='love'?'💘':wv?'🏡':'🐺')+'</div><h2 style="text-align:center">'+(G.win==='love'?'Die Liebe hat gesiegt! (Liebespaar & Amor)':wv?'Das Dorf hat gewonnen!':'Die Werwölfe haben gewonnen!')+'</h2>'+G.msg.split('\n').map(esc).join('')+'</div>'+
+    '<div class="card"><h2>Wer war wer?</h2>'+G.players.map(p=>'<div class="pl'+(isWin(p)?' win':'')+'"><span>'+R[p.role][0]+'</span>'+esc(p.name)+(G.lv&&G.lv.includes(p.id)?' 💘':'')+'<span class="badge">'+(isWin(p)?'🏆 ':'')+R[p.role][1]+(p.alive?'':' †')+'</span></div>').join('')+'</div>'+(isHost?'<button id="again">Neue Runde</button>':'')
+  }
+  const rc=roleCard(m);
+  if(G.lv&&G.lv.includes(me.id)&&G.st!=='amor')h+='<div class="msg heart">💘 Du bist verliebt in <b>'+esc(nm(G.lv.find(x=>x!==me.id)))+'</b> ('+R[lvp().role][0]+' '+R[lvp().role][1]+'). Stirbt dein Herz, stirbst auch du. '+(G.rg?'Ihr gewinnt weiterhin mit eurem ursprünglichen Team – nicht zusammen.':'Ihr gewinnt nur, wenn ihr beide als Letzte übrig bleibt – nicht mit dem Dorf!')+'</div>';
+  if(G.msg)h+='<div class="msg">'+esc(G.msg)+'</div>';
+  if(!m.alive){h+='<div class="card"><div class="big">💀</div><p style="text-align:center">Du bist ausgeschieden. Du darfst weiter zuschauen – aber kein Wort mehr zu den Lebenden!</p></div>'}
+  const others=al().filter(x=>x.id!==me.id);
+  if(G.st==='amor'){
+    if(m.alive&&m.role==='amor'){const lv=G.lv||[];h+='<div class="card"><h2>💘 Wen verkuppelst du?</h2><p class="mute">Wähle zwei Personen (auch dich selbst). Stirbt eine, stirbt auch die andere.</p>'+picker(al().filter(x=>!lv.includes(x.id)),null,'love')+'<p class="mute">Gewählt: '+(lv.map(id=>esc(nm(id))).join(' & ')||'noch niemand')+'</p></div>'}
+    else h+=sleepCard('Amor erwacht und verkuppelt zwei Menschen ...')}
+  else if(G.st==='mayor'){
+    if(m.alive)h+='<div class="card"><h2>🎖️ Bürgermeisterwahl</h2><p class="mute">Wer soll Bürgermeister werden? Seine Stimme zählt bei den Abstimmungen doppelt. Du darfst auch dich selbst wählen.</p>'+picker(al(),G.mv[me.id],'mvote')+timerHtml()+'<p class="mute">Gewählt: '+Object.keys(G.mv).length+' / '+al().length+'</p></div>';
+    else h+='<div class="card"><p class="mute">Das Dorf wählt einen Bürgermeister ...</p>'+timerHtml()+'</div>'}
+  else if(G.st==='heir'){
+    if(G.hr.id===me.id)h+='<div class="card"><h2>🎖️ Dein letzter Wille</h2><p class="mute">Du bist gestorben – ernenne vom Sterbebett aus deine Nachfolge. Ihre Stimme zählt bei Abstimmungen doppelt.</p>'+picker(al(),null,'heir')+'</div>';
+    else h+='<div class="card"><div class="big">🎖️</div><p style="text-align:center">Der Bürgermeister '+esc(nm(G.hr.id))+' bestimmt im Sterben seine Nachfolge ...</p></div>'}
+  else if(G.st==='hunter'){
+    if(G.hn.id===me.id)h+='<div class="card"><h2>🏹 Dein letzter Schuss</h2><p class="mute">Du bist gestorben – nimm jemanden mit!</p>'+picker(al(),null,'shoot')+'</div>';
+    else h+='<div class="card"><div class="big">🏹</div><p style="text-align:center">Der Jäger '+esc(nm(G.hn.id))+' legt im Todeskampf an ...</p></div>'}
+  else if(G.st==='wolves'){
+    if(m.alive&&m.role==='wolf'){
+      h+='<div class="card"><h2>🐺 Wen fresst ihr?</h2><p class="mute">Ihr müsst euch einigen – die Mehrheit entscheidet. Ohne Einigung nach 45 Sekunden gibt es kein Opfer.</p>'+(G.wm?'<p class="msg">'+esc(G.wm)+'</p>':'')+timerHtml()+picker(al().filter(x=>x.role!=='wolf'),G.wv[me.id],'wolf')+
+      '<p class="mute">Stimmen: '+al('wolf').map(x=>esc(x.name)+' → '+(G.wv[x.id]?esc(nm(G.wv[x.id])):'…')).join(' · ')+'</p></div>'}
+    else h+=sleepCard('Die Werwölfe erwachen und suchen ihr Opfer …')}
+  else if(G.st==='seer'){
+    if(m.alive&&m.role==='seer'){
+      h+='<div class="card"><h2>🔮 Wen willst du ansehen?</h2>'+(G.sr?'<div class="msg"><b>'+esc(nm(G.sr.id))+'</b> ist '+R[G.sr.role][0]+' <b style="color:var(--gold)">'+R[G.sr.role][1]+'</b>.</div><button data-k="ok">Verstanden, Augen schließen</button>':picker(others,null,'pick'))+'</div>'}
+    else h+=sleepCard('Die Seherin erwacht …')}
+  else if(G.st==='witch'){
+    if(m.alive&&m.role==='witch'){
+      h+='<div class="card"><h2>🧪 Die Hexe erwacht</h2><p>'+(G.kill?'<span class="vicl">🩸 Opfer der Werwölfe: <b>'+esc(nm(G.kill))+'</b></span>'+(G.saved?' – <span style="color:var(--grn)">gerettet</span>':''):'Heute Nacht gibt es kein Opfer.')+'</p>'+
+      (G.heal&&G.kill&&!G.saved?'<button data-k="heal">💚 Heiltrank einsetzen</button>':'')+
+      (G.poison&&!G.pz?'<p class="mute">Gifttrank einsetzen auf:</p>'+picker(others,null,'poison'):'')+
+      (G.pz?'<p>Gift gewählt für <b>'+esc(nm(G.pz))+'</b>.</p>':'')+'<button class="sec" data-k="done">Fertig – weiterschlafen</button></div>'}
+    else h+=sleepCard('Die Hexe erwacht …')}
+  else if(G.st==='day'){
+    h+='<div class="card"><div class="big">☀️</div><h2 style="text-align:center">Das Dorf erwacht</h2><p class="mute" style="text-align:center">'+(G.mp?'Das Dorf braucht einen Bürgermeister – seine Stimme zählt bei Abstimmungen doppelt. Besprecht, wer geeignet ist.':'Diskutiert laut miteinander, wer ein Werwolf sein könnte.')+'</p>'+(m.alive?'<button data-k="ready"'+(G.dsc&&G.dsc[me.id]?' disabled':'')+'>'+(G.dsc&&G.dsc[me.id]?'✅ Du bist fertig':(G.mp?'✅ Fertig – zur Bürgermeisterwahl':'✅ Fertig – zur Abstimmung'))+'</button>':'')+'<p class="mute" style="text-align:center">Bereit: '+Object.keys(G.dsc||{}).filter(k=>al().some(x=>x.id===k)).length+' / '+al().length+' – die Mehrheit beendet die Diskussion.</p>'+'</div>'}
+  else if(G.st==='vote'){
+    if(m.alive)h+='<div class="card"><h2>🗳️ Wen verbannt ihr?</h2>'+picker(others,G.vt[me.id],'vote')+timerHtml()+'<p class="mute">🎖️ Der Bürgermeister hat 2 Stimmen. Abgestimmt: '+Object.keys(G.vt).length+' / '+al().length+'</p></div>';
+    else h+='<div class="card"><p class="mute">Das Dorf stimmt ab … ('+Object.keys(G.vt).length+' / '+al().length+')</p></div>'}
+  return '<div class="game"><div class="gh"><b>Düsterwald</b><span class="mute">Runde '+G.rd+' · Code '+esc(code)+'</span><button class="chip" id="rl">'+R[m.role][0]+' Meine Rolle</button></div><div class="hud">'+h+'</div>'+playersCard()+'</div>'+rc
+}
+let lastDD=-1;
+function isWin(p){const w=G.win,lv=(G.lv||[]).includes(p.id),sp=!G.rg&&(lv||(p.role==='amor'&&G.lv&&G.lv.length===2));if(w==='love')return sp;if(sp)return false;if(w==='village')return p.role!=='wolf';return p.role==='wolf'}
+const CA={wolf:['🐺','Von den Werwölfen gefressen'],vote:['🔥','Vom Dorf hingerichtet'],poison:['☠️','Vom Gifttrank der Hexe getötet'],hunter:['🏹','Vom Jäger erschossen'],love:['💔','Gestorben an gebrochenem Herzen']};
+function fxExtra(c){
+  if(c==='wolf')return '<svg class="claws" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M20 5Q35 45 45 95"/><path d="M42 0Q55 45 65 100"/><path d="M65 5Q75 45 82 95"/></svg>';
+  if(c==='vote')return Array.from({length:14},(_,i)=>'<span class="ember" style="left:'+(5+i*7)+'%;animation-delay:'+(i%5)*.35+'s">'+(i%2?'🔥':'✨')+'</span>').join('');
+  if(c==='poison')return Array.from({length:12},(_,i)=>'<span class="bub" style="left:'+(6+i*8)+'%;animation-delay:'+(i%6)*.4+'s">🫧</span>').join('');
+  if(c==='hunter')return '<span class="arw">🏹</span>';
+  return ''
+}
+let fxQ=[],fxBusy=false;
+function fxNext(){
+  const d=fxQ.shift();if(!d){fxBusy=false;return}
+  fxBusy=true;const c=d.c||'wolf',ca=CA[c]||['💀',''],o=document.createElement('div');
+  o.className='fx c-'+c;o.style.setProperty('--d','3.6s');
+  o.innerHTML=fxExtra(c)+'<div class="dth c-'+c+'"><div class="sk">'+ca[0]+'</div><div class="dn">'+esc(d.n)+'</div><div class="dr">'+R[d.r][0]+' '+R[d.r][1]+'</div><div class="dw">'+ca[1]+'</div></div>';
+  let done=false;const nx=()=>{if(done)return;done=true;o.remove();fxNext()};
+  o.onclick=nx;document.body.appendChild(o);setTimeout(nx,4300)
+}
+function deathFx(){
+  if(!G)return;
+  if(lastDD===-1){lastDD=G.ddk||0;return}
+  if(!G.ddk||G.ddk===lastDD)return;lastDD=G.ddk;
+  if(!G.dd||!G.dd.length)return;
+  fxQ.push(...G.dd.map(d=>({...d})));if(!fxBusy)fxNext()
+}
+function deathFx2(){
+  if(!G)return;
+  if(lastDD===-1){lastDD=G.ddk||0;return}
+  if(!G.ddk||G.ddk===lastDD)return;lastDD=G.ddk;
+  if(!G.dd||!G.dd.length)return;
+  const c0=G.dd[0].c||'wolf',o=document.createElement('div');o.className='fx c-'+c0;o.style.setProperty('--d',(3.6+G.dd.length*.6)+'s');
+  o.innerHTML=fxExtra(c0)+G.dd.map((d,i)=>{const ca=CA[d.c]||['💀',''];return '<div class="dth c-'+d.c+'" style="animation-delay:'+i*.6+'s"><div class="sk">'+ca[0]+'</div><div class="dn">'+esc(d.n)+'</div><div class="dr">'+R[d.r][0]+' '+R[d.r][1]+'</div><div class="dw">'+ca[1]+'</div></div>'}).join('');
+  o.onclick=()=>o.remove();document.body.appendChild(o);setTimeout(()=>o.remove(),4400+G.dd.length*600)
+}
+function deathFxOld(){
+  if(!G)return;
+  if(lastDD===-1){lastDD=G.ddk||0;return}
+  if(!G.ddk||G.ddk===lastDD)return;lastDD=G.ddk;
+  if(!G.dd||!G.dd.length)return;
+  const o=document.createElement('div');o.className='fx';o.style.setProperty('--d',(3.6+G.dd.length*.6)+'s');
+  o.innerHTML=G.dd.map((d,i)=>'<div class="dth" style="animation-delay:'+i*.6+'s"><div class="sk">'+(d.w?'💔':'💀')+'</div><div class="dn">'+esc(d.n)+'</div><div class="dr">'+R[d.r][0]+' '+R[d.r][1]+'</div>'+(d.w?'<div class="dw">'+esc(d.w)+'</div>':'')+'</div>').join('');
+  o.onclick=()=>o.remove();document.body.appendChild(o);setTimeout(()=>o.remove(),4400+G.dd.length*600)
+}
+function render(){render0();if(pv&&G)$('#app').insertAdjacentHTML('afterbegin',bar());timerSync();deathFx()}
+function render0(){if(!G||G.st==='lobby')document.body.classList.remove('ingame');
+  const a=$('#app');
+  if(!G){
+    document.body.classList.remove('day');
+    a.innerHTML=moon+'<h1>Werwölfe<br>von Düsterwald</h1><p class="sub">Das Dorf schläft … aber nicht alle.</p><div class="card"><input id="nm" placeholder="Dein Name" maxlength="14" value="'+esc(me.name)+'"><button id="cr">Neues Spiel erstellen</button></div><div class="card"><h2>Spiel beitreten</h2><input id="cd" class="code" placeholder="CODE" maxlength="4"><button class="sec" id="jn">Beitreten</button></div><div class="card"><h2>👁 Vorschau-Modus</h2><p class="mute">Zum Ausprobieren mit nur einem Gerät: Du steuerst alle Personen abwechselnd selbst.</p><input id="pn" type="number" min="4" max="10" value="10"><p class="mute" style="margin:0 0 6px">Anzahl Personen (4–10)</p><button class="sec" id="pv">Vorschau starten</button></div><p class="err">'+esc(err)+'</p><p class="mute" style="text-align:center">Ab 4 Personen · jede Person auf einem eigenen Gerät</p>';
+    return}
+  if(G.st==='lobby'){
+    a.innerHTML=moon+'<h1>Lobby</h1><p class="sub">Teile diesen Code mit deinen Mitspielenden</p><div class="codebox">'+esc(code)+'</div><div class="card"><h2>Im Dorf ('+G.players.length+')</h2>'+G.players.map(p=>'<div class="pl"><span>🕯️</span>'+esc(p.name)+(p.id===G.host?'<span class="badge">Spielleiter</span>':'')+'</div>').join('')+'</div>'+
+    (isHost?'<button id="go"'+(G.players.length<4?' disabled':'')+'>Spiel starten</button><p class="mute" style="text-align:center">'+(G.players.length<4?'Mindestens 4 Personen nötig.':'Rollen werden zufällig verteilt.')+'</p>':'<p class="mute" style="text-align:center">Warte, bis der Spielleiter startet …</p>');
+    return}
+  a.innerHTML=(G.st==='end'?'<h1 style="font-size:24px">Düsterwald</h1>':'')+gameView()
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.id==='cr')return create();
+  if(b.id==='jn')return joinGame();
+  if(b.id==='go')return startGame();
+  if(b.id==='tov')return toVote();
+  if(b.id==='rl'){showRole=!showRole;return render()}
+  if(b.id==='again'){G.players.forEach(p=>p.role=null);G.st='lobby';G.msg='';save();return}
+  if(b.id==='pv')return preview();
+  if(b.id==='ex')return location.reload();
+  if(b.id==='nx'){const p=G.players.find(needs);if(p)switchTo(p);return}
+  if(b.dataset.sw){const p=G.players.find(x=>x.id===b.dataset.sw);if(p)switchTo(p);return}
+  if(b.dataset.pl){sel=sel===b.dataset.pl?null:b.dataset.pl;return render()}
+  if(b.dataset.k){if(b.dataset.t)sel=null;act(b.dataset.k,b.dataset.t)}
+});
+boot();
+</script>
+</body>
+</html>
